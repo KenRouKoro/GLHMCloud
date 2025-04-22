@@ -1,4 +1,4 @@
-package com.foxapplication.glhmcloud.service.impl;
+package com.foxapplication.glhmcloud.service.impl.mqtt;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dromara.mica.mqtt.core.client.MqttClientCreator;
@@ -10,12 +10,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-public class MqttClientConnectListener {
+public class MQTTClientConnectListener {
 
     private final MqttClientCreator mqttClientCreator;
 
     @Autowired
-    public MqttClientConnectListener(MqttClientCreator mqttClientCreator) {
+    public MQTTClientConnectListener(MqttClientCreator mqttClientCreator) {
         this.mqttClientCreator = mqttClientCreator;
     }
 
@@ -26,11 +26,6 @@ public class MqttClientConnectListener {
 
     @EventListener
     public void onDisconnect(MqttDisconnectEvent event) {
-        // 离线时更新重连时的密码，适用于类似阿里云 mqtt clientId 连接带时间戳的方式
         log.info("MqttDisconnectEvent:{}", event);
-        // 在断线时更新 clientId、username、password
-        //mqttClientCreator.clientId("newClient" + System.currentTimeMillis())
-        //        .username("newUserName")
-        //        .password("newPassword");
     }
 }

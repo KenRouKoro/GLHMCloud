@@ -1,7 +1,7 @@
-# GLHMCloud
+# 昊明云设备控制平台（HMCLOUD）
 
 ## 项目概述
-GLHMCloud是一个基于Spring Boot 3.4.4构建的Java应用程序，提供云服务功能。项目使用Java 21，采用Gradle进行构建管理。
+HMCLOUD是一个基于Spring Boot 3.4.4构建的Java应用程序，提供工业设备的远程管理。项目使用Java 21，采用Gradle进行构建管理。
 
 ## 项目架构
 该项目采用标准的Spring Boot架构，遵循MVC设计模式，主要包含以下核心组件：

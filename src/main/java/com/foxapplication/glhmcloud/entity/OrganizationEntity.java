@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.util.UUID;
@@ -14,6 +15,7 @@ public class OrganizationEntity {
     @Id
     @GeneratedValue
     private UUID id;
+    @NotBlank
     private String name = "";
     private String phone = "";
     private String email = "";

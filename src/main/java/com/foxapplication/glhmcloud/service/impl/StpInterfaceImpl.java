@@ -6,6 +6,7 @@ import com.foxapplication.glhmcloud.entity.UserEntity;
 import org.dromara.hutool.core.convert.Converter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ public class StpInterfaceImpl implements StpInterface {
      * @return 该账号id具有的权限码集合
      */
     @Override
+    @Transactional
     public List<String> getPermissionList(Object loginId, String loginType) {
         return List.of();
     }
@@ -40,6 +42,7 @@ public class StpInterfaceImpl implements StpInterface {
      * @return 该账号id具有的角色标识集合
      */
     @Override
+    @Transactional
     public List<String> getRoleList(Object loginId, String loginType) {
         List<String> list = new ArrayList<>();
         list.add("user");

@@ -7,15 +7,20 @@ import com.foxapplication.glhmcloud.entity.UserEntity;
 import com.foxapplication.glhmcloud.param.BaseResponse;
 import com.foxapplication.glhmcloud.param.view.UserViewData;
 import com.foxapplication.glhmcloud.util.Check;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.dromara.hutool.core.lang.Validator;
 import org.dromara.hutool.crypto.digest.DigestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Tag(name = "超级管理员用户视图管理")
 @RestController
 @RequestMapping("/view/su")
 @SaCheckRole("super-admin")
@@ -26,19 +31,30 @@ public class SuperAdminUserView {
     public SuperAdminUserView(UserDao userDao) {
         this.userDao = userDao;
     }
+
+    @Operation(summary = "获取用户列表")
     @GetMapping("/list")
+    @Transactional
     public BaseResponse<List<UserViewData>> list(){
         return BaseResponse.success(userDao.findAllSafe());
     }
+
+    @Operation(summary = "删除用户")
+    @Transactional
     @GetMapping("/delete-user")
-    public BaseResponse<String> delete(@RequestParam("user") String id){
+    public BaseResponse<String> delete(@Parameter(description = "用户ID") @RequestParam("user") String id){
         if(userDao.findById(UUID.fromString(id)).isEmpty())
             return BaseResponse.fail("用户不存在");
         userDao.deleteById(UUID.fromString(id));
         return BaseResponse.success();
     }
+
+    @Operation(summary = "更新用户组织ID")
     @PostMapping("/update-organization-id")
-    public BaseResponse<String> updateOrganizationID(@RequestParam("user")String user,@RequestParam("organization-id")String organizationID) {
+    @Transactional
+    public BaseResponse<String> updateOrganizationID(
+            @Parameter(description = "用户ID") @RequestParam("user") String user,
+            @Parameter(description = "组织ID") @RequestParam("organization-id") String organizationID) {
         UUID id = UUID.fromString(user);
         Optional<UserEntity> userEntity = userDao.findById(id);
         if (userEntity.isEmpty()) {
@@ -52,8 +68,12 @@ public class SuperAdminUserView {
         return BaseResponse.success(organizationID);
     }
 
+    @Operation(summary = "更新用户密码")
     @PostMapping("/update-passwd")
-    public BaseResponse<String> updatePW(@RequestParam("user")String user, @RequestParam("password")String password) {
+    @Transactional
+    public BaseResponse<String> updatePW(
+            @Parameter(description = "用户ID") @RequestParam("user") String user,
+            @Parameter(description = "新密码") @RequestParam("password") String password) {
         UUID id = UUID.fromString(user);
         Optional<UserEntity> userEntity = userDao.findById(id);
         if (userEntity.isEmpty()) {
@@ -69,8 +89,12 @@ public class SuperAdminUserView {
         }
     }
 
+    @Operation(summary = "更新用户名称")
+    @Transactional
     @PostMapping("/update-name")
-    public BaseResponse<String> updateName(@RequestParam("user")String user,@RequestParam("name")String name) {
+    public BaseResponse<String> updateName(
+            @Parameter(description = "用户ID") @RequestParam("user") String user,
+            @Parameter(description = "新名称") @RequestParam("name") String name) {
         UUID id = UUID.fromString(user);
         Optional<UserEntity> userEntity = userDao.findById(id);
         if (userEntity.isEmpty()) {
@@ -81,8 +105,13 @@ public class SuperAdminUserView {
             return BaseResponse.success(name);
         }
     }
+
+    @Operation(summary = "更新用户邮箱")
+    @Transactional
     @PostMapping("/update-email")
-    public BaseResponse<String> updateEmail(@RequestParam("user")String user,@RequestParam("email")String email) {
+    public BaseResponse<String> updateEmail(
+            @Parameter(description = "用户ID") @RequestParam("user") String user,
+            @Parameter(description = "新邮箱") @RequestParam("email") String email) {
         UUID id = UUID.fromString(user);
         Optional<UserEntity> userEntity = userDao.findById(id);
         if (userEntity.isEmpty()) {
@@ -96,8 +125,13 @@ public class SuperAdminUserView {
             return BaseResponse.success(email);
         }
     }
+
+    @Operation(summary = "更新用户手机号")
+    @Transactional
     @PostMapping("/update-phone")
-    public BaseResponse<String> updatePhone(@RequestParam("user")String user,@RequestParam("phone")String phone) {
+    public BaseResponse<String> updatePhone(
+            @Parameter(description = "用户ID") @RequestParam("user") String user,
+            @Parameter(description = "新手机号") @RequestParam("phone") String phone) {
         UUID id = UUID.fromString(user);
         Optional<UserEntity> userEntity = userDao.findById(id);
         if (userEntity.isEmpty()) {
@@ -111,8 +145,13 @@ public class SuperAdminUserView {
             return BaseResponse.success(phone);
         }
     }
+
+    @Operation(summary = "更新用户头像")
+    @Transactional
     @PostMapping("/update-avatar")
-    public BaseResponse<String> updateAvatar(@RequestParam("user")String user,@RequestParam("avatar")String avatar) {
+    public BaseResponse<String> updateAvatar(
+            @Parameter(description = "用户ID") @RequestParam("user") String user,
+            @Parameter(description = "新头像URL") @RequestParam("avatar") String avatar) {
         UUID id = UUID.fromString(user);
         Optional<UserEntity> userEntity = userDao.findById(id);
         if (userEntity.isEmpty()) {
@@ -123,8 +162,13 @@ public class SuperAdminUserView {
             return BaseResponse.success(avatar);
         }
     }
+
+    @Operation(summary = "更新用户权限")
+    @Transactional
     @PostMapping("/update-permission")
-    public BaseResponse<Integer> updatePermission(@RequestParam("user")String user, @RequestParam("permission")int permission) {
+    public BaseResponse<Integer> updatePermission(
+            @Parameter(description = "用户ID") @RequestParam("user") String user,
+            @Parameter(description = "新权限") @RequestParam("permission") int permission) {
         UUID id = UUID.fromString(user);
         Optional<UserEntity> userEntity = userDao.findById(id);
         if (userEntity.isEmpty()) {
@@ -135,8 +179,11 @@ public class SuperAdminUserView {
         }
         return BaseResponse.success(permission);
     }
+
+    @Operation(summary = "创建用户")
+    @Transactional
     @PostMapping("/create-user")
-    public BaseResponse<String> createUser(@RequestParam("user")String username){
+    public BaseResponse<String> createUser(@Parameter(description = "用户名") @RequestParam("user") String username){
         if (userDao.existsByUsername(username)){
             return BaseResponse.fail("用户名已存在");
         }

@@ -1,6 +1,7 @@
 package com.foxapplication.glhmcloud.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,9 +17,10 @@ public class UserEntity {
     @Id
     @GeneratedValue()
     private UUID id;
-
+    @NotBlank
     private String username = "";
     @Lob
+    @NotBlank
     private String passwd = "";
     private String email = "";
     private String phone = "";

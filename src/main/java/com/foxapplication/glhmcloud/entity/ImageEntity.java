@@ -1,6 +1,7 @@
 package com.foxapplication.glhmcloud.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.util.UUID;
@@ -11,10 +12,10 @@ public class ImageEntity {
     @Id
     @GeneratedValue
     private UUID id;
+    @NotBlank
     private String name;
     @Lob
-    @Basic(fetch = FetchType.LAZY)
-    @Column(name="image", columnDefinition="longblob", nullable=false)
+    @NotBlank
     private byte[] image;
 
 }

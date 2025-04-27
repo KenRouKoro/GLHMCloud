@@ -2,10 +2,10 @@ spring:
   application:
     name: GLHMCloud
   datasource:
-    url: jdbc:h2:file:./glhmcloud/database/db
-    driver-class-name: org.h2.Driver
-    username: admin
-    password: 123456
+    url: ${DATASOURCE_URL:jdbc:h2:file:./glhmcloud/database/db}
+    driver-class-name: ${DATASOURCE_DRIVER:org.h2.Driver}
+    username: ${DATASOURCE_USERNAME:admin}
+    password: ${DATASOURCE_PASSWORD:123456}
   jpa:
     database: h2
     hibernate:
@@ -14,7 +14,9 @@ spring:
   h2:
     console:
       path: /h2admin
-      enabled: true
+      enabled: false
+  profiles:
+    active: secret
 
 server:
   port: 8081
@@ -24,27 +26,24 @@ logging:
 
 mqtt:
   client:
-    ip: wh.korostudio.cn
-    port: 1883
-    name: GLHMCloud-GL
-    client-id: GLHMCloud-GL
-    username: glhmcloud
-    password: glhm2025
+    ip: ${MQTT_IP:wh.korostudio.cn}
+    port: ${MQTT_PORT:1883}
+    name: ${MQTT_NAME:GLHMCloud-GL}
+    client-id: ${MQTT_CLIENT_ID:GLHMCloud-GL}
+    username: ${MQTT_USERNAME:glhmcloud}
+    password: ${MQTT_PASSWORD:glhm2025}
 
+springdoc:
+  api-docs:
+    path: /pub/api-docs
+  swagger-ui:
+    path: /pub/swagger-ui.html
 
-############## Sa-Token ?? (??: https://sa-token.cc) ##############
 sa-token:
-  # token ??????? cookie ???
-  token-name: glhm-auth
-  # token ????????? ??30??-1 ??????
+  token-name: glhmauth
   timeout: 2592000
-  # token ??????????????? token ???????????????????-1 ??????????
   active-timeout: -1
-  # ?????????????? ?? true ???????, ? false ??????????
   is-concurrent: true
-  # ????????????????? token ?? true ????????? token, ? false ????????? token?
   is-share: false
-  # token ?????????uuid?simple-uuid?random-32?random-64?random-128?tik?
   token-style: uuid
-  # ????????
   is-log: true

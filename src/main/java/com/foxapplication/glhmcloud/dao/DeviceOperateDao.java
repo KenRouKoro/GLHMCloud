@@ -20,4 +20,6 @@ public interface DeviceOperateDao extends JpaRepository<DeviceOperateEntity, Lon
     Page<DeviceOperateEntity> findAllByOrderByTimeDesc(Pageable pageable,@Param("deviceId") String deviceId);
     @Query("SELECT EXISTS (SELECT 1 FROM DeviceOperateEntity e WHERE e.device_id = :deviceId)")
     boolean existsByDevice_id(String deviceId);
+    @Query("SELECT e FROM DeviceOperateEntity e WHERE e.device_id = :deviceId")
+    long countByDevice_id(String deviceId);
 }

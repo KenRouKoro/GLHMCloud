@@ -29,4 +29,6 @@ public interface DeviceSecRecordDao extends JpaRepository<DeviceSecRecordEntity,
 
     @Query("SELECT EXISTS (SELECT 1 FROM DeviceSecRecordEntity e WHERE e.device_id = :deviceId)")
     boolean existsByDevice_id(String deviceId);
+    @Query("SELECT e FROM DeviceSecRecordEntity e WHERE e.device_id = :deviceId")
+    long countByDevice_id(String deviceId);
 }

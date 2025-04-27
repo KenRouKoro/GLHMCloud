@@ -35,3 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### 敏感配置文件 ###
+src/main/resources/application-secret.yml
+/glhmcloud/

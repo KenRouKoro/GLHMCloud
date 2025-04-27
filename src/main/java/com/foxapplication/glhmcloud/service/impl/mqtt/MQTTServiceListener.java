@@ -10,6 +10,7 @@ import com.foxapplication.glhmcloud.entity.devicerecord.DeviceOperateEntity;
 import com.foxapplication.glhmcloud.entity.devicerecord.DeviceRecordEntity;
 import com.foxapplication.glhmcloud.entity.devicerecord.DeviceSecRecordEntity;
 import lombok.extern.slf4j.Slf4j;
+import org.dromara.hutool.core.bean.BeanUtil;
 import org.dromara.hutool.core.date.DateUtil;
 import org.dromara.hutool.core.text.split.SplitUtil;
 import org.dromara.hutool.json.JSONObject;
@@ -19,6 +20,7 @@ import org.dromara.mica.mqtt.spring.client.MqttClientSubscribe;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -53,6 +55,7 @@ public class MQTTServiceListener {
      * @param payload 设备状态的JSON数据，包含设备状态信息
      */
     @MqttClientSubscribe(value = "/hmcloud/drive/status/+", qos = MqttQoS.QOS1)
+    @Transactional
     public void onDriveStatus(String topic, byte[] payload){
         List<String> topicList = SplitUtil.split(topic, "/",true,true);
         String id = topicList.getLast();
@@ -60,9 +63,8 @@ public class MQTTServiceListener {
             log.info("设备不存在：{}", id);
             return;
         }
-
-        if (!deviceDao.isOnline(id)){
-            DeviceEntity device = deviceDao.findById(id).get();
+        DeviceEntity device = deviceDao.findById(id).get();
+        if (!device.isOnline()){
             device.setOnline(true);
             deviceDao.saveAndFlush(device);
         }
@@ -86,6 +88,7 @@ public class MQTTServiceListener {
      * @param payload 操作指令的JSON数据，包含具体的操作参数
      */
     @MqttClientSubscribe(value = "/hmcloud/drive/operate/+", qos = MqttQoS.QOS1)
+    @Transactional
     public void onDriveOperate(String topic, byte[] payload){
         List<String> topicList = SplitUtil.split(topic, "/",true,true);
         String id = topicList.getLast();
@@ -94,8 +97,8 @@ public class MQTTServiceListener {
             return;
         }
 
-        if (!deviceDao.isOnline(id)){
-            DeviceEntity device = deviceDao.findById(id).get();
+        DeviceEntity device = deviceDao.findById(id).get();
+        if (!device.isOnline()){
             device.setOnline(true);
             deviceDao.saveAndFlush(device);
         }
@@ -120,6 +123,7 @@ public class MQTTServiceListener {
      * @param payload 离线事件的JSON数据，包含clientid等信息
      */
     @MqttClientSubscribe(value = "$SYS/brokers/+/clients/+/disconnected", qos = MqttQoS.QOS1)
+    @Transactional
     public void offline(String topic, byte[] payload){
         String payloadStr = new String(payload, StandardCharsets.UTF_8);
         JSONObject payloadJson = JSONUtil.parse(payloadStr).asJSONObject();
@@ -138,6 +142,7 @@ public class MQTTServiceListener {
      * 该任务会检查所有在线设备的最近5分钟记录，并执行相应的处理逻辑。
      */
     @Scheduled(fixedRate = 300000)
+    @Transactional
     public void processFiveMinuteRecords() {
         // 获取所有在线设备列表
         List<DeviceEntity> onlineDevices = deviceDao.findAllByOnline(true);
@@ -153,7 +158,8 @@ public class MQTTServiceListener {
             handleFiveMinuteRecords(records);
         }
     }
-    @Scheduled(fixedRate = 120000)
+    @Scheduled(fixedRate = 600000)
+    @Transactional
     public void checkOnline(){
         List<DeviceEntity> onlineDevices = deviceDao.findAllByOnline(true);
         long now = System.currentTimeMillis();
@@ -192,7 +198,8 @@ public class MQTTServiceListener {
                 }
             });
         });
-        DeviceRecordEntity record = (DeviceRecordEntity) records.getLast();
+        DeviceRecordEntity record = new DeviceRecordEntity();
+        BeanUtil.copyProperties(records.getLast(),record);
         JSONObject dataJson = JSONUtil.parse(record.getData()).asJSONObject();
         dataJson.putAllValue(maxList);
         record.setData(dataJson.toString());
@@ -205,6 +212,7 @@ public class MQTTServiceListener {
      * 清理条件为创建时间早于一周前的数据。
      */
     @Scheduled(cron = "0 0 2 * * ?")
+    @Transactional
     public void cleanupOldData() {
         Date yesterday = DateUtil.lastWeek();
         deviceSecRecordDao.deleteByCreatedTimeBefore(yesterday.getTime());

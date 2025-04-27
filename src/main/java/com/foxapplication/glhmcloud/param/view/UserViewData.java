@@ -19,6 +19,7 @@ public class UserViewData {
     private String email = "";
     private String phone = "";
     private String organizationID = "";
+    private String avatar = "";
     private int permission = 0;
 
     public UserViewData(UserEntity entity) {
@@ -28,6 +29,7 @@ public class UserViewData {
         this.phone = entity.getPhone();
         this.organizationID = String.valueOf(entity.getOrganization_id());
         this.permission = entity.getPermission();
+        this.avatar= entity.getAvatar();
     }
 
     public static UserViewData fromEntity(UserEntity entity) {
@@ -38,6 +40,7 @@ public class UserViewData {
         data.phone = entity.getPhone();
         data.organizationID = String.valueOf(entity.getOrganization_id());
         data.permission = entity.getPermission();
+        data.avatar= entity.getAvatar();
         return data;
     }
 }

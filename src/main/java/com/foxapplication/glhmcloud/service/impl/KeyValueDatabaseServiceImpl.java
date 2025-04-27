@@ -6,6 +6,7 @@ import com.foxapplication.glhmcloud.service.KeyValueDatabaseService;
 import org.dromara.hutool.core.convert.Converter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class KeyValueDatabaseServiceImpl implements KeyValueDatabaseService {
@@ -18,6 +19,7 @@ public class KeyValueDatabaseServiceImpl implements KeyValueDatabaseService {
     }
 
     @Override
+    @Transactional
     public void put(String key, Object value) {
         String valueStr = Converter.identity().convert(String.class, value);
         keyValueDao.saveAndFlush(new KeyValueEntity(key, valueStr));
@@ -31,6 +33,7 @@ public class KeyValueDatabaseServiceImpl implements KeyValueDatabaseService {
      * @return 属性值，无对应值返回defaultValue
      */
     @Override
+    @Transactional
     public Object getObj(String key, Object defaultValue) {
         if (keyValueDao.findById(key).isPresent()) {
             return keyValueDao.findById(key).get().getValue();

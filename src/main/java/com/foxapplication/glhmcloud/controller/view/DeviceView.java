@@ -7,18 +7,21 @@ import com.foxapplication.glhmcloud.dao.UserDao;
 import com.foxapplication.glhmcloud.entity.DeviceEntity;
 import com.foxapplication.glhmcloud.entity.UserEntity;
 import com.foxapplication.glhmcloud.param.BaseResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.dromara.hutool.core.text.StrUtil;
 import org.dromara.mica.mqtt.spring.client.MqttClientTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Tag(name = "设备视图管理")
 @RestController
 @RequestMapping("/view/device")
 public class DeviceView {
@@ -33,6 +36,8 @@ public class DeviceView {
         this.mqttClientTemplate = mqttClientTemplate;
     }
 
+    @Operation(summary = "获取当前用户的设备列表")
+    @Transactional
     @PostMapping("/this")
     public BaseResponse<List<DeviceEntity>> getDevice() {
         UUID id = UUID.fromString(StpUtil.getLoginIdAsString());
@@ -51,35 +56,47 @@ public class DeviceView {
         }
         return BaseResponse.success(deviceEntityList);
     }
+    @Operation(summary = "根据设备ID获取设备信息")
+    @Transactional
     @PostMapping("/get")
-    public BaseResponse<DeviceEntity> getDevice(String id) {
+    public BaseResponse<DeviceEntity> getDevice(@Parameter(description = "设备ID") @RequestParam("id") String id) {
         Optional<DeviceEntity> deviceEntity = deviceDao.findById(id);
         if (deviceEntity.isEmpty()){
             return BaseResponse.fail("设备不存在");
         }
         return BaseResponse.success(deviceEntity.get());
     }
+    @Operation(summary = "获取所有设备列表（仅限超级管理员）")
     @PostMapping("/list")
     @SaCheckRole("super-admin")
+    @Transactional
     public BaseResponse<List<DeviceEntity>> getDeviceList() {
         List<DeviceEntity> deviceEntityList = deviceDao.findAll();
         return BaseResponse.success(deviceEntityList);
     }
+    @Operation(summary = "删除设备（仅限超级管理员）")
     @PostMapping("/delete")
+    @Transactional
     @SaCheckRole("super-admin")
-    public BaseResponse<String> delete(String id) {
+    public BaseResponse<String> delete(@Parameter(description = "设备ID") @RequestParam("id") String id) {
         deviceDao.deleteById(id);
         return BaseResponse.success();
     }
+    @Operation(summary = "更新设备信息（仅限超级管理员）")
     @PostMapping("/update")
+    @Transactional
     @SaCheckRole("super-admin")
-    public BaseResponse<String> update(DeviceEntity entity) {
+    public BaseResponse<String> update(@Parameter(description = "设备实体") @ModelAttribute DeviceEntity entity) {
         deviceDao.save(entity);
         return BaseResponse.success();
     }
 
+    @Operation(summary = "向设备发送命令")
     @PostMapping("/send-command")
-    public BaseResponse<String> sendCommand(String deviceId, String command) {
+    @Transactional
+    public BaseResponse<String> sendCommand(
+            @Parameter(description = "设备ID") @RequestParam("deviceId") String deviceId,
+            @Parameter(description = "命令内容") @RequestParam("command") String command) {
         UUID id = UUID.fromString(StpUtil.getLoginIdAsString());
         Optional<UserEntity> userEntity = userDao.findById(id);
         if (userEntity.isEmpty()){
@@ -89,6 +106,10 @@ public class DeviceView {
             return BaseResponse.fail("用户未关联组织");
         }
 
+        if (userEntity.get().getPermission() < 2){
+            return BaseResponse.fail("用户无权限");
+        }
+
         Optional<DeviceEntity> deviceEntity = deviceDao.findById(deviceId);
         if (deviceEntity.isEmpty()){
             return BaseResponse.fail("设备不存在");
@@ -96,6 +117,12 @@ public class DeviceView {
 
         if ((userEntity.get().getOrganization_id().equals(deviceEntity.get().getOrganization_id()) )&& (userEntity.get().getPermission()<4)){
             return BaseResponse.fail("设备不属于当前组织");
+        }
+
+        if(command.startsWith("lock")){
+            if (userEntity.get().getPermission() < 4){
+                return BaseResponse.fail("用户无权限");
+            }
         }
 
         mqttClientTemplate.publish(StrUtil.format("/hmcloud/drive/command/{}",deviceId), command.getBytes(StandardCharsets.UTF_8));
